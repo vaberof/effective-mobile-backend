@@ -1,0 +1,267 @@
+basePath: /api/v1
+definitions:
+  github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response:
+    properties:
+      payload:
+        items:
+          type: integer
+        type: array
+      status:
+        type: string
+    type: object
+  internal_app_entrypoint_http.carOwnerPayload:
+    properties:
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+  internal_app_entrypoint_http.carPayload:
+    properties:
+      id:
+        type: integer
+      mark:
+        type: string
+      model:
+        type: string
+      owner:
+        $ref: '#/definitions/internal_app_entrypoint_http.carOwnerPayload'
+      regNum:
+        type: string
+      year:
+        type: integer
+    type: object
+  internal_app_entrypoint_http.createCarsRequestBody:
+    properties:
+      regNums:
+        items:
+          type: string
+        type: array
+    type: object
+  internal_app_entrypoint_http.createCarsResponseBody:
+    properties:
+      message:
+        type: string
+    type: object
+  internal_app_entrypoint_http.deleteCarResponseBody:
+    properties:
+      message:
+        type: string
+    type: object
+  internal_app_entrypoint_http.listCarsResponseBody:
+    properties:
+      cars:
+        items:
+          $ref: '#/definitions/internal_app_entrypoint_http.carPayload'
+        type: array
+    type: object
+  internal_app_entrypoint_http.updateCarOwnerPayload:
+    properties:
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+  internal_app_entrypoint_http.updateCarRequestBody:
+    properties:
+      mark:
+        type: string
+      model:
+        type: string
+      owner:
+        $ref: '#/definitions/internal_app_entrypoint_http.updateCarOwnerPayload'
+      regNum:
+        type: string
+      year:
+        type: integer
+    type: object
+  internal_app_entrypoint_http.updateCarResponseBody:
+    properties:
+      id:
+        type: integer
+      mark:
+        type: string
+      model:
+        type: string
+      owner:
+        $ref: '#/definitions/internal_app_entrypoint_http.carOwnerPayload'
+      regNum:
+        type: string
+      year:
+        type: integer
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: API Server for Car Catalog Application
+  title: Car Catalog API
+  version: "1.0"
+paths:
+  /cars:
+    get:
+      consumes:
+      - application/json
+      description: List cars by filters
+      operationId: list-cars
+      parameters:
+      - description: An optional query parameter 'limit' that limits total number
+          of returned cars. By default 'limit' = 100
+        in: query
+        name: limit
+        type: integer
+      - description: An optional query parameter 'offset' that indicates how many
+          records should be skipped while listing cars. By default 'offset' = 0
+        in: query
+        name: offset
+        type: integer
+      - description: An optional query parameter 'regNum'
+        in: query
+        name: regNum
+        type: string
+      - description: An optional query parameter 'mark'
+        in: query
+        name: mark
+        type: string
+      - description: An optional query parameter 'model'
+        in: query
+        name: model
+        type: string
+      - description: An optional query parameter 'year'
+        in: query
+        name: year
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_app_entrypoint_http.listCarsResponseBody'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+      summary: List cars
+      tags:
+      - cars
+    post:
+      consumes:
+      - application/json
+      description: Create a new cars
+      operationId: create-cars
+      parameters:
+      - description: Payload with array of car registration numbers that needs to
+          be created
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_entrypoint_http.createCarsRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_app_entrypoint_http.createCarsResponseBody'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+      summary: Create a new cars
+      tags:
+      - cars
+  /cars/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a car
+      operationId: delete-car
+      parameters:
+      - description: Cars`s id that needs to be deleted
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_app_entrypoint_http.deleteCarResponseBody'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+      summary: Delete a car
+      tags:
+      - cars
+    patch:
+      consumes:
+      - application/json
+      description: Update a car
+      operationId: update-cars
+      parameters:
+      - description: Car`s id that needs to be updated
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Car object that needs to be updated
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_entrypoint_http.updateCarRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_app_entrypoint_http.updateCarResponseBody'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_vaberof_effective-mobile-backend_pkg_http_protocols_apiv1.Response'
+      summary: Update a car
+      tags:
+      - cars
+swagger: "2.0"

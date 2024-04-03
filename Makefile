@@ -49,3 +49,20 @@ migrate.down:
 
 swagger.gen:
 	swag init --parseDependency --parseInternal -g ./cmd/carcatalog/main.go -o ./cmd/carcatalog/docs
+
+tests.run:
+	go test ./internal/domain/car/tests/...
+
+tests.run.verbose:
+	go test -v \
+		./internal/domain/car/tests/...
+
+mock.gen: mock.car_api_service.gen mock.car_storage.gen
+
+mock.car_api_service.gen:
+	mockgen -source=internal/domain/car/car_api_service.go \
+	-destination=internal/domain/car/mocks/mock_car_api_service.go
+
+mock.car_storage.gen:
+	mockgen -source=internal/domain/car/car_storage.go \
+	-destination=internal/domain/car/mocks/mock_car_storage.go

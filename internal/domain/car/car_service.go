@@ -6,6 +6,7 @@ import (
 	"github.com/vaberof/effective-mobile-backend/internal/infra/storage"
 	"github.com/vaberof/effective-mobile-backend/pkg/logging/logs"
 	"log/slog"
+	"sync"
 )
 
 var (
@@ -41,26 +42,54 @@ func (c *carServiceImpl) Create(regNums []string) error {
 
 	log.Info("creating a car")
 
-	// call external api to get car info
+	errCh := make(chan error, len(regNums))
+	var wg sync.WaitGroup
+
 	for _, regNum := range regNums {
-		carInfo, err := c.carApiService.GetCar(regNum)
-		if err != nil {
-			log.Error("failed to create a car", "error", err)
+		wg.Add(1)
+		go c.callCarApi(regNum, errCh, &wg)
+	}
 
-			return fmt.Errorf("failed to create car: %w", err)
-		}
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
 
-		err = c.carStorage.Create(regNum, carInfo.Mark, carInfo.Model, &carInfo.Year, carInfo.Owner)
-		if err != nil {
-			log.Error("failed to create a car", "error", err)
+	var errors []error
 
-			return err
-		}
+	for err := range errCh {
+		log.Error("failed to create a car", "error", err)
+
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		log.Debug("failed to create a car", "errors[0]", errors[0])
+
+		return errors[0]
 	}
 
 	log.Info("cars have created")
 
 	return nil
+}
+
+func (c *carServiceImpl) callCarApi(regNum string, errCh chan<- error, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	carInfo, err := c.carApiService.GetCar(regNum)
+	if err != nil {
+		errCh <- fmt.Errorf("failed to call car api with regNum %s: %w", regNum, err)
+
+		return
+	}
+
+	err = c.carStorage.Create(regNum, carInfo.Mark, carInfo.Model, &carInfo.Year, carInfo.Owner)
+	if err != nil {
+		errCh <- fmt.Errorf("failed to create car with regNum %s: %w", regNum, err)
+
+		return
+	}
 }
 
 func (c *carServiceImpl) Update(id int64, regNum, mark, model *string, year *int16, ownerName, ownerSurname, ownerPatronymic *string) (*Car, error) {
